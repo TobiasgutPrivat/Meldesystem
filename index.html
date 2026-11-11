@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Situationserfassung</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        medical: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.25s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 min-h-screen p-3 sm:p-6 flex flex-col items-center justify-start">
+
+    <!-- Main Card Container -->
+    <main class="w-full max-w-xl bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        
+        <!-- Header minimal: Nur Autosave-Indikator und Reset -->
+        <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500 bg-slate-50/50">
+            <div class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="save-status" class="font-medium text-slate-600">Automatisch gespeichert</span>
+            </div>
+            <button onclick="resetForm()" class="text-slate-400 hover:text-slate-600 underline transition-colors">
+                Zurücksetzen
+            </button>
+        </div>
+
+        <div class="p-5 space-y-5">
+
+            <!-- Checkboxen: Schlank, ohne Rahmen & ohne Kasten -->
+            <div class="flex items-center space-x-6 text-xs text-slate-600">
+                <label class="flex items-center space-x-2 cursor-pointer hover:text-slate-900 transition-colors">
+                    <input type="checkbox" id="chk-anonym" onchange="triggerAutosave()" class="w-4 h-4 text-medical-600 rounded border-slate-300 focus:ring-medical-500">
+                    <span>Anonym</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer hover:text-slate-900 transition-colors">
+                    <input type="checkbox" id="chk-public" checked onchange="triggerAutosave()" class="w-4 h-4 text-medical-600 rounded border-slate-300 focus:ring-medical-500">
+                    <span>Öffentlich sichtbar</span>
+                </label>
+            </div>
+
+            <!-- Beschreibung Textarea -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label for="situation-text" class="text-xs font-semibold text-slate-700">Beschreibung</label>
+                    <span id="matching-indicator" class="hidden text-[11px] text-medical-600 font-medium flex items-center space-x-1">
+                        <i class="fa-solid fa-spinner animate-spin text-[10px]"></i>
+                        <span>Suche Thematiken...</span>
+                    </span>
+                </div>
+                <textarea 
+                    id="situation-text" 
+                    rows="4" 
+                    oninput="handleInput(this)"
+                    placeholder="Situation beschreiben..." 
+                    class="w-full px-3.5 py-2.5 text-sm text-slate-800 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none resize-y placeholder:text-slate-400"
+                ></textarea>
+            </div>
+
+            <!-- Anhang / Bilder Upload -->
+            <div class="flex items-center space-x-3">
+                <label class="inline-flex items-center px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
+                    <i class="fa-solid fa-paperclip mr-1.5 text-slate-400"></i> Anhang hinzufügen
+                    <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
+                </label>
+                <div id="attachments-container" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <!-- AUTOMATISCHES MATCHING DER THEMATIK (Ohne Prozentangaben) -->
+            <div id="section-thematiken" class="hidden space-y-2 pt-2 border-t border-slate-100 fade-in">
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Passende Thematik wählen</span>
+                
+                <div class="space-y-1.5" id="thematiken-list">
+                    <!-- Thematik 1 -->
+                    <label class="flex items-start p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-medical-500 cursor-pointer transition-all group">
+                        <input type="radio" name="thematik" value="thm-1" onchange="onSelectThematik('thm-1')" class="mt-0.5 text-medical-600 focus:ring-medical-500">
+                        <div class="ml-2.5 text-xs flex-1">
+                            <div class="font-medium text-slate-800 group-hover:text-medical-700">
+                                KIS Absturz bei Pflegedokumentation & Scannern
+                            </div>
+                            <span class="text-slate-400 text-[11px]">Zuständig: Applikationsbetreuung KIS — Marc Keller</span>
+                        </div>
+                    </label>
+
+                    <!-- Thematik 2 -->
+                    <label class="flex items-start p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-medical-500 cursor-pointer transition-all group">
+                        <input type="radio" name="thematik" value="thm-2" onchange="onSelectThematik('thm-2')" class="mt-0.5 text-medical-600 focus:ring-medical-500">
+                        <div class="ml-2.5 text-xs flex-1">
+                            <div class="font-medium text-slate-800 group-hover:text-medical-700">
+                                Etikettendrucker Station B offline / Papierstau
+                            </div>
+                            <span class="text-slate-400 text-[11px]">Zuständig: Hardware Support — ICT Medizintechnik</span>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Button "Keine passende Thematik" -->
+                <div class="pt-1">
+                    <button type="button" onclick="rejectThematik()" class="w-full py-2 px-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-800 text-xs font-medium rounded-xl transition-colors text-center flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-xmark text-slate-400 text-xs"></i>
+                        <span>Keine passende Thematik</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ZUSTÄNDIGKEITS-AUSWAHL (Direkt mit Suche) -->
+            <div id="section-zustaendigkeit" class="hidden space-y-3 pt-2 border-t border-slate-100 fade-in">
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Zuständige Stelle / Person wählen</span>
+                
+                <!-- Vorschläge für Zuständigkeit -->
+                <div class="space-y-1.5" id="zustaendigkeit-suggestions">
+                    <label class="flex items-center p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-medical-500 cursor-pointer transition-all group">
+                        <input type="radio" name="zustaendigkeit-opt" value="Applikationsbetreuung KIS — Marc Keller" onchange="selectZustaendigkeit(this.value)" checked class="text-medical-600 focus:ring-medical-500">
+                        <div class="ml-2.5 text-xs">
+                            <span class="font-medium text-slate-800 block">Applikationsbetreuung KIS</span>
+                            <span class="text-slate-400 text-[11px]">Marc Keller (ICT)</span>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-medical-500 cursor-pointer transition-all group">
+                        <input type="radio" name="zustaendigkeit-opt" value="Teamleitung Station A — Katrin Sutter" onchange="selectZustaendigkeit(this.value)" class="text-medical-600 focus:ring-medical-500">
+                        <div class="ml-2.5 text-xs">
+                            <span class="font-medium text-slate-800 block">Teamleitung Station A</span>
+                            <span class="text-slate-400 text-[11px]">Katrin Sutter (Pflegeführung)</span>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-medical-500 cursor-pointer transition-all group">
+                        <input type="radio" name="zustaendigkeit-opt" value="ICT Medizintechnik — Gruppe" onchange="selectZustaendigkeit(this.value)" class="text-medical-600 focus:ring-medical-500">
+                        <div class="ml-2.5 text-xs">
+                            <span class="font-medium text-slate-800 block">ICT Medizintechnik</span>
+                            <span class="text-slate-400 text-[11px]">Gruppe (Pikett-Dienst)</span>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Direkt sichtbare Suche für Zuständigkeit -->
+                <div class="pt-1 space-y-2">
+                    <label class="text-[11px] font-medium text-slate-500 block">Andere Zuständigkeit suchen:</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                        <input 
+                            type="text" 
+                            id="zustaendigkeit-input"
+                            oninput="onZustaendigkeitSearch(this.value)"
+                            placeholder="Rolle, Gruppe oder Name suchen..." 
+                            class="w-full pl-8 pr-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-medical-500 outline-none"
+                        >
+                    </div>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" onclick="quickSetZustaendigkeit('Betrieb & Logistik — Gruppe')" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg transition-colors">Betrieb & Logistik</button>
+                        <button type="button" onclick="quickSetZustaendigkeit('Qualitätsmanagement — Ivon Meier')" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg transition-colors">Qualitätsmanagement</button>
+                        <button type="button" onclick="quickSetZustaendigkeit('Oberarzt Dienst — Dr. Med. Weber')" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg transition-colors">Oberarzt Dienst</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        let searchTimeout = null;
+        let state = {
+            description: '',
+            isAnonym: false,
+            isPublic: true,
+            attachments: [],
+            selectedThematik: null,
+            rejectedThematik: false,
+            zustaendigkeit: 'Applikationsbetreuung KIS — Marc Keller'
+        };
+
+        // Eingabe-Behandlung mit automatischer Suche bei Texteingabe
+        function handleInput(textarea) {
+            state.description = textarea.value;
+            triggerAutosave();
+
+            const indicator = document.getElementById('matching-indicator');
+            const thematikenSec = document.getElementById('section-thematiken');
+            const zustaendigkeitSec = document.getElementById('section-zustaendigkeit');
+
+            clearTimeout(searchTimeout);
+
+            const trimmedLength = state.description.trim().length;
+
+            if (trimmedLength >= 3) {
+                // Zeige Such-Indikator sofort an
+                indicator.classList.remove('hidden');
+                
+                searchTimeout = setTimeout(() => {
+                    indicator.classList.add('hidden');
+                    // Falls der Benutzer noch nicht auf "Keine passende Thematik" geklickt hat
+                    if (!state.rejectedThematik) {
+                        thematikenSec.classList.remove('hidden');
+                    }
+                }, 300);
+            } else {
+                // Bei zu kurzem Text alle dynamischen Sektionen ausblenden
+                indicator.classList.add('hidden');
+                thematikenSec.classList.add('hidden');
+                zustaendigkeitSec.classList.add('hidden');
+                state.rejectedThematik = false;
+            }
+        }
+
+        // Thematik auswählen
+        function onSelectThematik(value) {
+            state.selectedThematik = value;
+            document.getElementById('section-zustaendigkeit').classList.add('hidden');
+            triggerAutosave();
+        }
+
+        // Klick auf "Keine passende Thematik" Button
+        function rejectThematik() {
+            state.selectedThematik = null;
+            state.rejectedThematik = true;
+            
+            // Entferne Radio-Auswahl
+            const thematikRadios = document.getElementsByName('thematik');
+            thematikRadios.forEach(r => r.checked = false);
+
+            // Verberge Thematiken-Block und zeige direkt Zuständigkeits-Block
+            document.getElementById('section-thematiken').classList.add('hidden');
+            document.getElementById('section-zustaendigkeit').classList.remove('hidden');
+            triggerAutosave();
+        }
+
+        // Zuständigkeit wählen
+        function selectZustaendigkeit(value) {
+            state.zustaendigkeit = value;
+            document.getElementById('zustaendigkeit-input').value = '';
+            triggerAutosave();
+        }
+
+        function quickSetZustaendigkeit(name) {
+            state.zustaendigkeit = name;
+            document.getElementById('zustaendigkeit-input').value = name;
+            
+            // Uncheck standard radios wenn quick-button gewählt
+            const zustaendigkeitRadios = document.getElementsByName('zustaendigkeit-opt');
+            zustaendigkeitRadios.forEach(r => r.checked = false);
+            
+            triggerAutosave();
+        }
+
+        function onZustaendigkeitSearch(val) {
+            if (val.trim().length > 0) {
+                state.zustaendigkeit = val;
+                const zustaendigkeitRadios = document.getElementsByName('zustaendigkeit-opt');
+                zustaendigkeitRadios.forEach(r => r.checked = false);
+                triggerAutosave();
+            }
+        }
+
+        // Autosave Indikator Update
+        function triggerAutosave() {
+            const saveStatus = document.getElementById('save-status');
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            saveStatus.innerText = `Gespeichert (${timeStr})`;
+        }
+
+        // File-Upload Handling
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    state.attachments.push(e.target.result);
+                    renderAttachments();
+                    triggerAutosave();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function renderAttachments() {
+            const container = document.getElementById('attachments-container');
+            container.innerHTML = '';
+            state.attachments.forEach((src, idx) => {
+                const div = document.createElement('div');
+                div.className = 'relative w-8 h-8 rounded border border-slate-300 overflow-hidden group';
+                div.innerHTML = `
+                    <img src="${src}" class="w-full h-full object-cover">
+                    <button onclick="removeAttachment(${idx})" class="absolute inset-0 bg-black/50 text-white flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function removeAttachment(index) {
+            state.attachments.splice(index, 1);
+            renderAttachments();
+            triggerAutosave();
+        }
+
+        // Formular zurücksetzen
+        function resetForm() {
+            state = {
+                description: '',
+                isAnonym: false,
+                isPublic: true,
+                attachments: [],
+                selectedThematik: null,
+                rejectedThematik: false,
+                zustaendigkeit: 'Applikationsbetreuung KIS — Marc Keller'
+            };
+            document.getElementById('situation-text').value = '';
+            document.getElementById('chk-anonym').checked = false;
+            document.getElementById('chk-public').checked = true;
+            document.getElementById('section-thematiken').classList.add('hidden');
+            document.getElementById('section-zustaendigkeit').classList.add('hidden');
+            document.getElementById('zustaendigkeit-input').value = '';
+            
+            const thematikRadios = document.getElementsByName('thematik');
+            thematikRadios.forEach(r => r.checked = false);
+
+            const zustaendigkeitRadios = document.getElementsByName('zustaendigkeit-opt');
+            if (zustaendigkeitRadios.length > 0) zustaendigkeitRadios[0].checked = true;
+
+            renderAttachments();
+            triggerAutosave();
+        }
+    </script>
+</body>
+</html>
