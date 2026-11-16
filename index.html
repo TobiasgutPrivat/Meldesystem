@@ -49,24 +49,12 @@
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span id="save-status" class="font-medium text-slate-600">Automatisch gespeichert</span>
             </div>
-            <button onclick="resetForm()" class="text-slate-400 hover:text-slate-600 underline transition-colors">
+            <button type="button" onclick="resetForm()" class="text-slate-400 hover:text-slate-600 underline transition-colors">
                 Zurücksetzen
             </button>
         </div>
 
         <div class="p-5 space-y-5">
-
-            <!-- Checkboxen: Schlank, ohne Rahmen & ohne Kasten -->
-            <div class="flex items-center space-x-6 text-xs text-slate-600">
-                <label class="flex items-center space-x-2 cursor-pointer hover:text-slate-900 transition-colors">
-                    <input type="checkbox" id="chk-anonym" onchange="triggerAutosave()" class="w-4 h-4 text-medical-600 rounded border-slate-300 focus:ring-medical-500">
-                    <span>Anonym</span>
-                </label>
-                <label class="flex items-center space-x-2 cursor-pointer hover:text-slate-900 transition-colors">
-                    <input type="checkbox" id="chk-public" checked onchange="triggerAutosave()" class="w-4 h-4 text-medical-600 rounded border-slate-300 focus:ring-medical-500">
-                    <span>Öffentlich sichtbar</span>
-                </label>
-            </div>
 
             <!-- Beschreibung Textarea -->
             <div>
@@ -84,25 +72,42 @@
                     placeholder="Situation beschreiben..." 
                     class="w-full px-3.5 py-2.5 text-sm text-slate-800 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none resize-y placeholder:text-slate-400"
                 ></textarea>
+                <p class="hidden sm:block mt-1 text-[10px] text-slate-400">
+                    Screenshots per Ctrl + V einfügen
+                </p>
             </div>
 
-            <!-- Anhang / Bilder Upload -->
-            <div class="flex items-center space-x-3">
-                <label class="inline-flex items-center px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
-                    <i class="fa-solid fa-paperclip mr-1.5 text-slate-400"></i> Anhang hinzufügen
-                    <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
-                </label>
-                <div id="attachments-container" class="flex flex-wrap gap-2"></div>
+            <!-- Anhang & Mobile Kamera -->
+            <div class="space-y-2.5">
+                <div class="flex flex-wrap items-center gap-2">
+                    <!-- Klassischer Datei-Upload -->
+                    <label class="inline-flex items-center px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
+                        <i class="fa-solid fa-paperclip mr-1.5 text-slate-400"></i> Anhang hinzufügen
+                        <input type="file" id="file-input" accept="image/*" multiple class="hidden" onchange="handleFileUpload(event)">
+                    </label>
+
+                    <!-- Direktes Foto nur auf Mobile -->
+                    <label class="inline-flex sm:hidden items-center px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
+                        <i class="fa-solid fa-camera mr-1.5 text-medical-600"></i> Foto machen
+                        <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleFileUpload(event)">
+                    </label>
+                </div>
+
+                <!-- Vorschau der angehängten Bilder -->
+                <div id="attachments-container" class="flex flex-wrap gap-2 empty:hidden pt-1"></div>
             </div>
 
-            <!-- AUTOMATISCHES MATCHING DER THEMATIK (Ohne Prozentangaben) -->
+            <!-- AUTOMATISCHES MATCHING DER THEMATIK (Mehrfachauswahl möglich) -->
             <div id="section-thematiken" class="hidden space-y-2 pt-2 border-t border-slate-100 fade-in">
-                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Passende Thematik wählen</span>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Passende Thematiken wählen</span>
+                    <span class="text-[11px] text-slate-400">Mehrfachauswahl</span>
+                </div>
                 
                 <div class="space-y-1.5" id="thematiken-list">
                     <!-- Thematik 1 -->
                     <label class="flex items-start p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-medical-500 cursor-pointer transition-all group">
-                        <input type="radio" name="thematik" value="thm-1" onchange="onSelectThematik('thm-1')" class="mt-0.5 text-medical-600 focus:ring-medical-500">
+                        <input type="checkbox" name="thematik" value="thm-1" onchange="onToggleThematik(this)" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-medical-600 focus:ring-medical-500">
                         <div class="ml-2.5 text-xs flex-1">
                             <div class="font-medium text-slate-800 group-hover:text-medical-700">
                                 KIS Absturz bei Pflegedokumentation & Scannern
@@ -113,7 +118,7 @@
 
                     <!-- Thematik 2 -->
                     <label class="flex items-start p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-medical-500 cursor-pointer transition-all group">
-                        <input type="radio" name="thematik" value="thm-2" onchange="onSelectThematik('thm-2')" class="mt-0.5 text-medical-600 focus:ring-medical-500">
+                        <input type="checkbox" name="thematik" value="thm-2" onchange="onToggleThematik(this)" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-medical-600 focus:ring-medical-500">
                         <div class="ml-2.5 text-xs flex-1">
                             <div class="font-medium text-slate-800 group-hover:text-medical-700">
                                 Etikettendrucker Station B offline / Papierstau
@@ -132,14 +137,17 @@
                 </div>
             </div>
 
-            <!-- ZUSTÄNDIGKEITS-AUSWAHL (Direkt mit Suche) -->
+            <!-- ZUSTÄNDIGKEITS-AUSWAHL (Mehrfachauswahl + Suche) -->
             <div id="section-zustaendigkeit" class="hidden space-y-3 pt-2 border-t border-slate-100 fade-in">
-                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Zuständige Stelle / Person wählen</span>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Zuständige Stellen / Personen wählen</span>
+                    <span class="text-[11px] text-slate-400">Mehrfachauswahl</span>
+                </div>
                 
                 <!-- Vorschläge für Zuständigkeit -->
                 <div class="space-y-1.5" id="zustaendigkeit-suggestions">
                     <label class="flex items-center p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-medical-500 cursor-pointer transition-all group">
-                        <input type="radio" name="zustaendigkeit-opt" value="Applikationsbetreuung KIS — Marc Keller" onchange="selectZustaendigkeit(this.value)" checked class="text-medical-600 focus:ring-medical-500">
+                        <input type="checkbox" name="zustaendigkeit-opt" value="Applikationsbetreuung KIS — Marc Keller" onchange="onToggleZustaendigkeit(this)" checked class="w-4 h-4 rounded border-slate-300 text-medical-600 focus:ring-medical-500">
                         <div class="ml-2.5 text-xs">
                             <span class="font-medium text-slate-800 block">Applikationsbetreuung KIS</span>
                             <span class="text-slate-400 text-[11px]">Marc Keller (ICT)</span>
@@ -147,7 +155,7 @@
                     </label>
 
                     <label class="flex items-center p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-medical-500 cursor-pointer transition-all group">
-                        <input type="radio" name="zustaendigkeit-opt" value="Teamleitung Station A — Katrin Sutter" onchange="selectZustaendigkeit(this.value)" class="text-medical-600 focus:ring-medical-500">
+                        <input type="checkbox" name="zustaendigkeit-opt" value="Teamleitung Station A — Katrin Sutter" onchange="onToggleZustaendigkeit(this)" class="w-4 h-4 rounded border-slate-300 text-medical-600 focus:ring-medical-500">
                         <div class="ml-2.5 text-xs">
                             <span class="font-medium text-slate-800 block">Teamleitung Station A</span>
                             <span class="text-slate-400 text-[11px]">Katrin Sutter (Pflegeführung)</span>
@@ -155,7 +163,7 @@
                     </label>
 
                     <label class="flex items-center p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-medical-500 cursor-pointer transition-all group">
-                        <input type="radio" name="zustaendigkeit-opt" value="ICT Medizintechnik — Gruppe" onchange="selectZustaendigkeit(this.value)" class="text-medical-600 focus:ring-medical-500">
+                        <input type="checkbox" name="zustaendigkeit-opt" value="ICT Medizintechnik — Gruppe" onchange="onToggleZustaendigkeit(this)" class="w-4 h-4 rounded border-slate-300 text-medical-600 focus:ring-medical-500">
                         <div class="ml-2.5 text-xs">
                             <span class="font-medium text-slate-800 block">ICT Medizintechnik</span>
                             <span class="text-slate-400 text-[11px]">Gruppe (Pikett-Dienst)</span>
@@ -163,29 +171,75 @@
                     </label>
                 </div>
 
-                <!-- Direkt sichtbare Suche für Zuständigkeit -->
+                <!-- Container für zusätzlich ausgewählte Zuständigkeiten (Chips) -->
+                <div id="custom-zustaendigkeiten-tags" class="flex flex-wrap gap-1.5 empty:hidden"></div>
+
+                <!-- Direkt sichtbare Suche für weitere Zuständigkeiten -->
                 <div class="pt-1 space-y-2">
-                    <label class="text-[11px] font-medium text-slate-500 block">Andere Zuständigkeit suchen:</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                        <input 
-                            type="text" 
-                            id="zustaendigkeit-input"
-                            oninput="onZustaendigkeitSearch(this.value)"
-                            placeholder="Rolle, Gruppe oder Name suchen..." 
-                            class="w-full pl-8 pr-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-medical-500 outline-none"
-                        >
+                    <label class="text-[11px] font-medium text-slate-500 block">Weitere Zuständigkeit hinzufügen:</label>
+                    <div class="relative flex space-x-1.5">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <input 
+                                type="text" 
+                                id="zustaendigkeit-input"
+                                onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addCustomZustaendigkeitFromInput(); }"
+                                placeholder="Rolle, Gruppe oder Name suchen..." 
+                                class="w-full pl-8 pr-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-medical-500 outline-none"
+                            >
+                        </div>
+                        <button type="button" onclick="addCustomZustaendigkeitFromInput()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition-colors">
+                            Hinzufügen
+                        </button>
                     </div>
                     <div class="flex flex-wrap gap-1.5">
-                        <button type="button" onclick="quickSetZustaendigkeit('Betrieb & Logistik — Gruppe')" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg transition-colors">Betrieb & Logistik</button>
-                        <button type="button" onclick="quickSetZustaendigkeit('Qualitätsmanagement — Ivon Meier')" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg transition-colors">Qualitätsmanagement</button>
-                        <button type="button" onclick="quickSetZustaendigkeit('Oberarzt Dienst — Dr. Med. Weber')" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg transition-colors">Oberarzt Dienst</button>
+                        <button type="button" onclick="toggleQuickZustaendigkeit('Betrieb & Logistik — Gruppe')" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg transition-colors">+ Betrieb & Logistik</button>
+                        <button type="button" onclick="toggleQuickZustaendigkeit('Qualitätsmanagement — Ivon Meier')" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg transition-colors">+ Qualitätsmanagement</button>
+                        <button type="button" onclick="toggleQuickZustaendigkeit('Oberarzt Dienst — Dr. Med. Weber')" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg transition-colors">+ Oberarzt Dienst</button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Abschluss-Bereich: Checkboxen & Absenden-Button -->
+            <div class="pt-4 border-t border-slate-100 space-y-4">
+                
+                <!-- Checkboxen: Anonym & Öffentlich -->
+                <div class="flex items-center space-x-6 text-xs text-slate-600">
+                    <label class="flex items-center space-x-2 cursor-pointer hover:text-slate-900 transition-colors">
+                        <input type="checkbox" id="chk-anonym" onchange="handleCheckboxChange()" class="w-4 h-4 text-medical-600 rounded border-slate-300 focus:ring-medical-500">
+                        <span>Anonym</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer hover:text-slate-900 transition-colors">
+                        <input type="checkbox" id="chk-public" checked onchange="handleCheckboxChange()" class="w-4 h-4 text-medical-600 rounded border-slate-300 focus:ring-medical-500">
+                        <span>Öffentlich sichtbar</span>
+                    </label>
+                </div>
+
+                <!-- Absenden Button -->
+                <button type="button" onclick="submitForm()" class="w-full py-2.5 px-4 bg-medical-600 hover:bg-medical-700 active:bg-medical-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                    <span>Absenden</span>
+                </button>
+
+                <!-- Feedback-Meldung nach dem Absenden -->
+                <div id="submit-feedback" class="hidden p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center space-x-2 fade-in">
+                    <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+                    <span>Die Situation wurde erfolgreich übermittelt.</span>
                 </div>
             </div>
 
         </div>
     </main>
+
+    <!-- Lightbox Modal für Vollbild-Vorschau von Anhängen -->
+    <div id="image-modal" onclick="closeImageModal()" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+        <div class="relative max-w-3xl max-h-full">
+            <img id="modal-image" src="" class="max-w-full max-h-[85vh] rounded-xl shadow-2xl object-contain">
+            <button type="button" onclick="closeImageModal()" class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white text-slate-800 shadow-md flex items-center justify-center hover:bg-slate-100">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
 
     <script>
         let searchTimeout = null;
@@ -194,10 +248,91 @@
             isAnonym: false,
             isPublic: true,
             attachments: [],
-            selectedThematik: null,
+            selectedThematiken: [],
             rejectedThematik: false,
-            zustaendigkeit: 'Applikationsbetreuung KIS — Marc Keller'
+            zustaendigkeiten: ['Applikationsbetreuung KIS — Marc Keller'],
+            customZustaendigkeiten: []
         };
+
+        // Globaler Paste-Listener für Screenshots aus der Zwischenablage (Ctrl+V / Cmd+V)
+        document.addEventListener('paste', function(event) {
+            const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            for (let index in items) {
+                const item = items[index];
+                if (item.kind === 'file' && item.type.startsWith('image/')) {
+                    const blob = item.getAsFile();
+                    addImageFile(blob, 'Screenshot');
+                }
+            }
+        });
+
+        // Hilfsfunktion zum Verarbeiten einer Bilddatei / eines Blobs
+        function addImageFile(fileOrBlob, label = 'Anhang') {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                state.attachments.push({
+                    src: e.target.result,
+                    label: label
+                });
+                renderAttachments();
+                triggerAutosave();
+            };
+            reader.readAsDataURL(fileOrBlob);
+        }
+
+        // File-Upload & Kamera Handling
+        function handleFileUpload(event) {
+            const files = event.target.files;
+            const isCamera = event.target.id === 'camera-input';
+            if (files && files.length > 0) {
+                Array.from(files).forEach(file => {
+                    addImageFile(file, isCamera ? 'Foto' : file.name);
+                });
+            }
+            event.target.value = '';
+        }
+
+        function renderAttachments() {
+            const container = document.getElementById('attachments-container');
+            container.innerHTML = '';
+            state.attachments.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = 'relative w-16 h-16 rounded-xl border border-slate-300 overflow-hidden group shadow-xs bg-slate-100';
+                div.innerHTML = `
+                    <img src="${item.src}" onclick="openImageModal('${item.src}')" title="Klicken zum Vergrößern" class="w-full h-full object-cover cursor-pointer">
+                    <span class="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] px-1 truncate text-center pointer-events-none">
+                        ${item.label}
+                    </span>
+                    <button type="button" onclick="removeAttachment(${idx})" title="Entfernen" class="absolute top-1 right-1 w-4 h-4 rounded-full bg-black/70 hover:bg-red-600 text-white flex items-center justify-center text-[9px] opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function removeAttachment(index) {
+            state.attachments.splice(index, 1);
+            renderAttachments();
+            triggerAutosave();
+        }
+
+        function openImageModal(src) {
+            document.getElementById('modal-image').src = src;
+            document.getElementById('image-modal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('image-modal').classList.add('hidden');
+            document.getElementById('modal-image').src = '';
+        }
+
+        // Checkboxen-Änderung speichern
+        function handleCheckboxChange() {
+            state.isAnonym = document.getElementById('chk-anonym').checked;
+            state.isPublic = document.getElementById('chk-public').checked;
+            triggerAutosave();
+        }
 
         // Eingabe-Behandlung mit automatischer Suche bei Texteingabe
         function handleInput(textarea) {
@@ -213,18 +348,15 @@
             const trimmedLength = state.description.trim().length;
 
             if (trimmedLength >= 3) {
-                // Zeige Such-Indikator sofort an
                 indicator.classList.remove('hidden');
                 
                 searchTimeout = setTimeout(() => {
                     indicator.classList.add('hidden');
-                    // Falls der Benutzer noch nicht auf "Keine passende Thematik" geklickt hat
                     if (!state.rejectedThematik) {
                         thematikenSec.classList.remove('hidden');
                     }
                 }, 300);
             } else {
-                // Bei zu kurzem Text alle dynamischen Sektionen ausblenden
                 indicator.classList.add('hidden');
                 thematikenSec.classList.add('hidden');
                 zustaendigkeitSec.classList.add('hidden');
@@ -232,53 +364,85 @@
             }
         }
 
-        // Thematik auswählen
-        function onSelectThematik(value) {
-            state.selectedThematik = value;
+        // Thematik an-/abwählen (Mehrfachauswahl)
+        function onToggleThematik(checkbox) {
+            if (checkbox.checked) {
+                if (!state.selectedThematiken.includes(checkbox.value)) {
+                    state.selectedThematiken.push(checkbox.value);
+                }
+            } else {
+                state.selectedThematiken = state.selectedThematiken.filter(item => item !== checkbox.value);
+            }
             document.getElementById('section-zustaendigkeit').classList.add('hidden');
             triggerAutosave();
         }
 
         // Klick auf "Keine passende Thematik" Button
         function rejectThematik() {
-            state.selectedThematik = null;
+            state.selectedThematiken = [];
             state.rejectedThematik = true;
             
-            // Entferne Radio-Auswahl
-            const thematikRadios = document.getElementsByName('thematik');
-            thematikRadios.forEach(r => r.checked = false);
+            const thematikCheckboxes = document.getElementsByName('thematik');
+            thematikCheckboxes.forEach(cb => cb.checked = false);
 
-            // Verberge Thematiken-Block und zeige direkt Zuständigkeits-Block
             document.getElementById('section-thematiken').classList.add('hidden');
             document.getElementById('section-zustaendigkeit').classList.remove('hidden');
             triggerAutosave();
         }
 
-        // Zuständigkeit wählen
-        function selectZustaendigkeit(value) {
-            state.zustaendigkeit = value;
-            document.getElementById('zustaendigkeit-input').value = '';
+        // Zuständigkeit aus der Vorschlagsliste an-/abwählen
+        function onToggleZustaendigkeit(checkbox) {
+            if (checkbox.checked) {
+                if (!state.zustaendigkeiten.includes(checkbox.value)) {
+                    state.zustaendigkeiten.push(checkbox.value);
+                }
+            } else {
+                state.zustaendigkeiten = state.zustaendigkeiten.filter(item => item !== checkbox.value);
+            }
             triggerAutosave();
         }
 
-        function quickSetZustaendigkeit(name) {
-            state.zustaendigkeit = name;
-            document.getElementById('zustaendigkeit-input').value = name;
-            
-            // Uncheck standard radios wenn quick-button gewählt
-            const zustaendigkeitRadios = document.getElementsByName('zustaendigkeit-opt');
-            zustaendigkeitRadios.forEach(r => r.checked = false);
-            
-            triggerAutosave();
-        }
-
-        function onZustaendigkeitSearch(val) {
-            if (val.trim().length > 0) {
-                state.zustaendigkeit = val;
-                const zustaendigkeitRadios = document.getElementsByName('zustaendigkeit-opt');
-                zustaendigkeitRadios.forEach(r => r.checked = false);
+        // Zusätzliche Zuständigkeit per Schnellauswahl-Button hinzufügen
+        function toggleQuickZustaendigkeit(name) {
+            if (!state.customZustaendigkeiten.includes(name) && !state.zustaendigkeiten.includes(name)) {
+                state.customZustaendigkeiten.push(name);
+                renderCustomZustaendigkeiten();
                 triggerAutosave();
             }
+        }
+
+        // Zusätzliche Zuständigkeit aus dem Suchfeld hinzufügen
+        function addCustomZustaendigkeitFromInput() {
+            const input = document.getElementById('zustaendigkeit-input');
+            const val = input.value.trim();
+            if (val.length > 0 && !state.customZustaendigkeiten.includes(val) && !state.zustaendigkeiten.includes(val)) {
+                state.customZustaendigkeiten.push(val);
+                input.value = '';
+                renderCustomZustaendigkeiten();
+                triggerAutosave();
+            }
+        }
+
+        function removeCustomZustaendigkeit(index) {
+            state.customZustaendigkeiten.splice(index, 1);
+            renderCustomZustaendigkeiten();
+            triggerAutosave();
+        }
+
+        function renderCustomZustaendigkeiten() {
+            const container = document.getElementById('custom-zustaendigkeiten-tags');
+            container.innerHTML = '';
+            state.customZustaendigkeiten.forEach((item, idx) => {
+                const tag = document.createElement('span');
+                tag.className = 'inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-medical-50 border border-medical-100 text-medical-700 text-xs font-medium';
+                tag.innerHTML = `
+                    <span>${item}</span>
+                    <button type="button" onclick="removeCustomZustaendigkeit(${idx})" class="text-medical-500 hover:text-medical-700">
+                        <i class="fa-solid fa-xmark text-[10px]"></i>
+                    </button>
+                `;
+                container.appendChild(tag);
+            });
         }
 
         // Autosave Indikator Update
@@ -289,40 +453,25 @@
             saveStatus.innerText = `Gespeichert (${timeStr})`;
         }
 
-        // File-Upload Handling
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    state.attachments.push(e.target.result);
-                    renderAttachments();
-                    triggerAutosave();
-                };
-                reader.readAsDataURL(file);
+        // Formular absenden
+        function submitForm() {
+            const textarea = document.getElementById('situation-text');
+            if (state.description.trim().length === 0) {
+                textarea.focus();
+                textarea.classList.add('ring-2', 'ring-red-400', 'border-red-400');
+                setTimeout(() => {
+                    textarea.classList.remove('ring-2', 'ring-red-400', 'border-red-400');
+                }, 1500);
+                return;
             }
-        }
 
-        function renderAttachments() {
-            const container = document.getElementById('attachments-container');
-            container.innerHTML = '';
-            state.attachments.forEach((src, idx) => {
-                const div = document.createElement('div');
-                div.className = 'relative w-8 h-8 rounded border border-slate-300 overflow-hidden group';
-                div.innerHTML = `
-                    <img src="${src}" class="w-full h-full object-cover">
-                    <button onclick="removeAttachment(${idx})" class="absolute inset-0 bg-black/50 text-white flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function removeAttachment(index) {
-            state.attachments.splice(index, 1);
-            renderAttachments();
             triggerAutosave();
+            const feedback = document.getElementById('submit-feedback');
+            feedback.classList.remove('hidden');
+            
+            setTimeout(() => {
+                feedback.classList.add('hidden');
+            }, 4000);
         }
 
         // Formular zurücksetzen
@@ -332,23 +481,26 @@
                 isAnonym: false,
                 isPublic: true,
                 attachments: [],
-                selectedThematik: null,
+                selectedThematiken: [],
                 rejectedThematik: false,
-                zustaendigkeit: 'Applikationsbetreuung KIS — Marc Keller'
+                zustaendigkeiten: ['Applikationsbetreuung KIS — Marc Keller'],
+                customZustaendigkeiten: []
             };
             document.getElementById('situation-text').value = '';
             document.getElementById('chk-anonym').checked = false;
             document.getElementById('chk-public').checked = true;
             document.getElementById('section-thematiken').classList.add('hidden');
             document.getElementById('section-zustaendigkeit').classList.add('hidden');
+            document.getElementById('submit-feedback').classList.add('hidden');
             document.getElementById('zustaendigkeit-input').value = '';
             
-            const thematikRadios = document.getElementsByName('thematik');
-            thematikRadios.forEach(r => r.checked = false);
+            const thematikCheckboxes = document.getElementsByName('thematik');
+            thematikCheckboxes.forEach(cb => cb.checked = false);
 
-            const zustaendigkeitRadios = document.getElementsByName('zustaendigkeit-opt');
-            if (zustaendigkeitRadios.length > 0) zustaendigkeitRadios[0].checked = true;
+            const zustaendigkeitCheckboxes = document.getElementsByName('zustaendigkeit-opt');
+            zustaendigkeitCheckboxes.forEach((cb, index) => cb.checked = (index === 0));
 
+            renderCustomZustaendigkeiten();
             renderAttachments();
             triggerAutosave();
         }
