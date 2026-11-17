@@ -116,16 +116,32 @@
                         </div>
                     </label>
 
-                    <!-- Thematik 2 -->
+                    <!-- Thematik 2: Wiederkehrendes Pop-Up -->
                     <label class="flex items-start p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-medical-500 cursor-pointer transition-all group">
                         <input type="checkbox" name="thematik" value="thm-2" onchange="onToggleThematik(this)" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-medical-600 focus:ring-medical-500">
                         <div class="ml-2.5 text-xs flex-1">
                             <div class="font-medium text-slate-800 group-hover:text-medical-700">
-                                Etikettendrucker Station B offline / Papierstau
+                                Wiederkehrendes Pop-Up / Benachrichtigung muss ständig weggeklickt werden
                             </div>
-                            <span class="text-slate-400 text-[11px]">Zuständig: Hardware Support — ICT Medizintechnik</span>
+                            <span class="text-slate-400 text-[11px]">Zuständig: Applikationsbetreuung KIS / ICT Arbeitsplatz</span>
                         </div>
                     </label>
+                </div>
+
+                <!-- Lösungshinweis für Pop-Up Thematik (erscheint bei Auswahl von thm-2) -->
+                <div id="popup-solution-hint" class="hidden p-3 bg-medical-50 border border-medical-100 rounded-xl text-xs text-slate-700 space-y-1.5 fade-in">
+                    <div class="flex items-center space-x-1.5 font-semibold text-medical-700">
+                        <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                        <span>Lösungshinweis</span>
+                    </div>
+                    <p class="text-[11px] leading-relaxed text-slate-600">
+                        Dieses Pop-Up kann direkt am Arbeitsplatz umkonfiguriert werden, damit es nicht mehr laufend erscheint:
+                    </p>
+                    <ol class="list-decimal list-inside text-[11px] text-slate-600 space-y-0.5 pl-1">
+                        <li>Im KIS oben rechts auf <strong>Einstellungen</strong> <i class="fa-solid fa-gear text-[10px] text-slate-400"></i> &rarr; <strong>Benachrichtigungen & Hinweise</strong> öffnen.</li>
+                        <li>Die Option <em>«Statusmeldungen als modales Pop-Up anzeigen»</em> deaktivieren oder auf <em>«Nur in Statusleiste»</em> umstellen.</li>
+                        <li>Änderung mit <strong>Speichern</strong> bestätigen (wirkt sofort ohne Neustart).</li>
+                    </ol>
                 </div>
 
                 <!-- Button "Keine passende Thematik" -->
@@ -144,21 +160,21 @@
                     <span class="text-[11px] text-slate-400">Mehrfachauswahl</span>
                 </div>
                 
-                <!-- Vorschläge für Zuständigkeit -->
+                <!-- Vorschläge für Zuständigkeit (Teamleiter als erstes platziert) -->
                 <div class="space-y-1.5" id="zustaendigkeit-suggestions">
                     <label class="flex items-center p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-medical-500 cursor-pointer transition-all group">
-                        <input type="checkbox" name="zustaendigkeit-opt" value="Applikationsbetreuung KIS — Marc Keller" onchange="onToggleZustaendigkeit(this)" checked class="w-4 h-4 rounded border-slate-300 text-medical-600 focus:ring-medical-500">
+                        <input type="checkbox" name="zustaendigkeit-opt" value="Teamleitung Station A — Katrin Sutter" onchange="onToggleZustaendigkeit(this)" checked class="w-4 h-4 rounded border-slate-300 text-medical-600 focus:ring-medical-500">
                         <div class="ml-2.5 text-xs">
-                            <span class="font-medium text-slate-800 block">Applikationsbetreuung KIS</span>
-                            <span class="text-slate-400 text-[11px]">Marc Keller (ICT)</span>
+                            <span class="font-medium text-slate-800 block">Teamleitung Station A</span>
+                            <span class="text-slate-400 text-[11px]">Katrin Sutter (Pflegeführung)</span>
                         </div>
                     </label>
 
                     <label class="flex items-center p-2.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-medical-500 cursor-pointer transition-all group">
-                        <input type="checkbox" name="zustaendigkeit-opt" value="Teamleitung Station A — Katrin Sutter" onchange="onToggleZustaendigkeit(this)" class="w-4 h-4 rounded border-slate-300 text-medical-600 focus:ring-medical-500">
+                        <input type="checkbox" name="zustaendigkeit-opt" value="Applikationsbetreuung KIS — Marc Keller" onchange="onToggleZustaendigkeit(this)" class="w-4 h-4 rounded border-slate-300 text-medical-600 focus:ring-medical-500">
                         <div class="ml-2.5 text-xs">
-                            <span class="font-medium text-slate-800 block">Teamleitung Station A</span>
-                            <span class="text-slate-400 text-[11px]">Katrin Sutter (Pflegeführung)</span>
+                            <span class="font-medium text-slate-800 block">Applikationsbetreuung KIS</span>
+                            <span class="text-slate-400 text-[11px]">Marc Keller (ICT)</span>
                         </div>
                     </label>
 
@@ -250,7 +266,7 @@
             attachments: [],
             selectedThematiken: [],
             rejectedThematik: false,
-            zustaendigkeiten: ['Applikationsbetreuung KIS — Marc Keller'],
+            zustaendigkeiten: ['Teamleitung Station A — Katrin Sutter'],
             customZustaendigkeiten: []
         };
 
@@ -364,7 +380,7 @@
             }
         }
 
-        // Thematik an-/abwählen (Mehrfachauswahl)
+        // Thematik an-/abwählen (Mehrfachauswahl) & Lösungshinweis steuern
         function onToggleThematik(checkbox) {
             if (checkbox.checked) {
                 if (!state.selectedThematiken.includes(checkbox.value)) {
@@ -373,6 +389,15 @@
             } else {
                 state.selectedThematiken = state.selectedThematiken.filter(item => item !== checkbox.value);
             }
+
+            // Lösungshinweis anzeigen, wenn Pop-Up-Thematik ('thm-2') gewählt ist
+            const solutionHint = document.getElementById('popup-solution-hint');
+            if (state.selectedThematiken.includes('thm-2')) {
+                solutionHint.classList.remove('hidden');
+            } else {
+                solutionHint.classList.add('hidden');
+            }
+
             document.getElementById('section-zustaendigkeit').classList.add('hidden');
             triggerAutosave();
         }
@@ -385,6 +410,7 @@
             const thematikCheckboxes = document.getElementsByName('thematik');
             thematikCheckboxes.forEach(cb => cb.checked = false);
 
+            document.getElementById('popup-solution-hint').classList.add('hidden');
             document.getElementById('section-thematiken').classList.add('hidden');
             document.getElementById('section-zustaendigkeit').classList.remove('hidden');
             triggerAutosave();
@@ -483,12 +509,13 @@
                 attachments: [],
                 selectedThematiken: [],
                 rejectedThematik: false,
-                zustaendigkeiten: ['Applikationsbetreuung KIS — Marc Keller'],
+                zustaendigkeiten: ['Teamleitung Station A — Katrin Sutter'],
                 customZustaendigkeiten: []
             };
             document.getElementById('situation-text').value = '';
             document.getElementById('chk-anonym').checked = false;
             document.getElementById('chk-public').checked = true;
+            document.getElementById('popup-solution-hint').classList.add('hidden');
             document.getElementById('section-thematiken').classList.add('hidden');
             document.getElementById('section-zustaendigkeit').classList.add('hidden');
             document.getElementById('submit-feedback').classList.add('hidden');
